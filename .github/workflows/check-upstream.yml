@@ -25,7 +25,7 @@ jobs:
         run: |
           set -euo pipefail
           latest="$(curl -fsSL https://api.github.com/repos/Eugeny/tabby/releases/latest | jq -r '.tag_name' | sed 's/^v//')"
-          current="$(grep -oP 'version = "\K[^"]+' flake.nix | head -n 1)"
+          current="$(grep -oP 'version = "\K[^"]+' packages/tabby.nix | head -n 1)"
           echo "latest=$latest" >> "$GITHUB_OUTPUT"
           echo "current=$current" >> "$GITHUB_OUTPUT"
           if [ "$latest" = "$current" ]; then
@@ -42,9 +42,9 @@ jobs:
           url="https://github.com/Eugeny/tabby/releases/download/v${version}/tabby-${version}-linux-x64.AppImage"
           curl -fL --retry 3 -o /tmp/tabby.AppImage "$url"
           hash="$(nix hash file --type sha256 --sri /tmp/tabby.AppImage)"
-          sed -i "s|version = \"[0-9.]*\";|version = \"${version}\";|" flake.nix
-          sed -i "s|hash = \"sha256-[^\"]*\";|hash = \"${hash}\";|" flake.nix
-          grep -E 'version = |hash = ' flake.nix
+          sed -i "s|version = \"[0-9.]*\";|version = \"${version}\";|" packages/tabby.nix
+          sed -i "s|hash = \"sha256-[^\"]*\";|hash = \"${hash}\";|" packages/tabby.nix
+          grep -E 'version = |hash = ' packages/tabby.nix
 
       - name: 构建验证
         if: steps.check.outputs.latest != steps.check.outputs.current
@@ -55,7 +55,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add flake.nix
+          git add packages/tabby.nix
           if git diff --cached --quiet; then
             echo "无变化"
           else
