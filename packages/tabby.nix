@@ -14,6 +14,11 @@ let
     hash = "sha256-ee+3c/70X5fNO+IApwy53GkPzvjW+qLbwpZ5qo9ofYU=";
   };
 
+  extracted = appimageTools.extract {
+    pname = "tabby";
+    inherit version src;
+  };
+
   appimage = appimageTools.wrapType2 {
     pname = "tabby";
     inherit version src;
@@ -28,6 +33,12 @@ stdenv.mkDerivation {
 
   installPhase = ''
     makeWrapper ${appimage}/bin/tabby $out/bin/tabby --add-flags "--no-sandbox"
+
+    install -Dm644 ${extracted}/tabby.desktop $out/share/applications/tabby.desktop
+    substituteInPlace $out/share/applications/tabby.desktop \
+      --replace-fail "Exec=AppRun --no-sandbox %U" "Exec=tabby %U"
+
+    install -Dm644 ${extracted}/tabby.png $out/share/icons/hicolor/512x512/apps/tabby.png
   '';
 
   meta = {
