@@ -1,0 +1,29 @@
+name: nix-build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nix-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: 安装 Nix
+        uses: determinatesystems/nix-installer-action@v16
+
+      - name: 构建 tabby
+        run: nix build .#default --no-link --print-build-logs
